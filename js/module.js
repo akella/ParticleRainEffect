@@ -1,0 +1,311 @@
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+import fragment from "./shader/fragment.glsl";
+import vertex from "./shader/vertexParticles.glsl";
+import * as dat from "dat.gui";
+import gsap from "gsap";
+import Particle from "./particle.js";
+
+const load = require("load-asset");
+
+var colors = require("nice-color-palettes");
+
+export default class Sketch {
+  constructor(options) {
+    this.scene = new THREE.Scene();
+
+    this.container = options.dom;
+    this.url = options.url;
+    this.mouseoverDOM = document.querySelector(options.mouseover);
+
+    this.config = options.config;
+    this.width = this.container.offsetWidth;
+    this.height = this.container.offsetHeight;
+    this.renderer = new THREE.WebGLRenderer({
+      preserveDrawingBuffer: true,
+      alpha: true,
+    });
+    this.over = document.querySelector(".over");
+    this.renderer.autoClear = false;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setSize(this.width, this.height);
+    this.renderer.setClearColor(0x112233, 1);
+    this.renderer.physicallyCorrectLights = true;
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
+
+    this.palette = colors[0];
+    this.palette = this.palette.map((c) => new THREE.Color(c));
+    console.log(this.palette);
+
+    this.container.appendChild(this.renderer.domElement);
+
+    this.camera = new THREE.PerspectiveCamera(
+      70,
+      window.innerWidth / window.innerHeight,
+      0.001,
+      1000
+    );
+
+    // var frustumSize = 10;
+    // var aspect = window.innerWidth / window.innerHeight;
+    // this.camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, -1000, 1000 );
+    this.camera.position.set(0, 0, 150);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.time = 0;
+
+    this.urls = [this.url];
+    this.pres = 200;
+    this.iWidth = 100;
+    this.iHeight = 100;
+    this.num = 5000;
+    this.camera.fov =
+      (Math.atan(this.iWidth / 300 / this.camera.aspect) * 2 * 180) / Math.PI;
+
+    load.all(this.urls).then((images) => {
+      let img = images[0];
+
+      this.updateImage(img);
+
+      this.isPlaying = true;
+      this.settings();
+
+      this.addObjects();
+      if (!this.config) this.mouseEvents();
+      this.resize();
+      this.render();
+      this.setupResize();
+    });
+  }
+
+  updateImage(img) {
+    this.image = Array.from(Array(this.pres), () => new Array(this.pres));
+    let canv = document.createElement("canvas");
+    let ctx = canv.getContext("2d");
+    document.body.appendChild(canv);
+    canv.width = this.pres;
+    canv.height = this.pres;
+    ctx.clearRect(0, 0, this.pres, this.pres);
+    ctx.drawImage(img, 0, 0, this.pres, this.pres);
+    var imageData = ctx.getImageData(0, 0, this.pres, this.pres);
+    for (let i = 0; i < imageData.data.length; i = i + 4) {
+      var x = (i / 4) % this.pres;
+      var y = Math.floor(i / 4 / this.pres);
+      this.image[x][y] = imageData.data[i] / 255;
+      // this.image[x][y] = [imageData.data[i],imageData.data[i+1],imageData.data[i+2]] ;
+    }
+  }
+
+  updateParticles() {
+    this.particles.forEach((p) => {
+      p.gravity =
+        -this.settings.gravity - Math.random() * this.settings.randomness;
+      p.slowGravity = p.gravity * this.settings.gravityDifference;
+    });
+    this.material.uniforms.size.value = this.settings.size;
+  }
+
+  mouseEvents() {
+    this.mouseoverDOM.addEventListener("mouseover", () => {
+      gsap.to(".over", {
+        duration: 1,
+        opacity: 0.1,
+      });
+      gsap.to(this.settings, {
+        duration: 1,
+        progress: 0,
+      });
+    });
+    this.mouseoverDOM.addEventListener("mouseout", () => {
+      gsap.to(".over", {
+        duration: 1,
+        opacity: 1,
+        delay: 0.4,
+      });
+      gsap.to(this.settings, {
+        duration: 1,
+        progress: 1,
+        // delay: 0.4
+      });
+    });
+  }
+
+  settings() {
+    let that = this;
+
+    this.settings = {
+      progress: 1,
+      number: 5000,
+      trails: 0.1,
+      size: 0.7,
+      gravity: 0.24,
+      gravityDifference: 0.08,
+      randomness: 0.5,
+      randomPalette: () => {
+        let rand = Math.floor(100 * Math.random());
+        let palette = colors[rand];
+        console.log(rand);
+        palette = palette.map((c) => new THREE.Color(c));
+        this.material.uniforms.palette.value = palette;
+      },
+      allWhite: () => {
+        let palette = ["#fff", "#fff", "#fff", "#fff", "#fff"];
+        palette = palette.map((c) => new THREE.Color(c));
+        this.material.uniforms.palette.value = palette;
+      },
+    };
+
+    if (this.config) {
+      this.gui = new dat.GUI();
+      this.gui.add(this.settings, "progress", 0, 1, 0.01);
+
+      this.gui.add(this.settings, "trails", 0, 0.2, 0.01).onFinishChange(() => {
+        this.clearPlane.material.opacity = this.settings.trails;
+      });
+
+      this.gui.add(this.settings, "gravity", 0, 1, 0.01).onFinishChange(() => {
+        this.updateParticles();
+      });
+
+      this.gui
+        .add(this.settings, "number", 2000, 20000, 100)
+        .onFinishChange(() => {
+          this.populateParticles();
+        });
+
+      this.gui
+        .add(this.settings, "gravityDifference", 0, 1, 0.01)
+        .onFinishChange(() => {
+          this.updateParticles();
+        });
+      this.gui.add(this.settings, "size", 0, 3, 0.01).onFinishChange(() => {
+        this.updateParticles();
+      });
+
+      this.gui
+        .add(this.settings, "randomness", 0, 2, 0.01)
+        .onFinishChange(() => {
+          this.updateParticles();
+        });
+
+      this.gui.add(this.settings, "randomPalette");
+      this.gui.add(this.settings, "allWhite");
+    }
+  }
+
+  setupResize() {
+    window.addEventListener("resize", this.resize.bind(this));
+  }
+
+  resize() {
+    this.width = this.container.offsetWidth;
+    this.height = this.container.offsetHeight;
+    this.renderer.setSize(this.width, this.height);
+    this.camera.aspect = this.width / this.height;
+
+    this.camera.updateProjectionMatrix();
+  }
+
+  addObjects() {
+    let that = this;
+    this.material = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
+      uniforms: {
+        time: { value: 0 },
+        palette: { value: this.palette },
+        size: { value: 0.5 },
+        resolution: { value: new THREE.Vector4() },
+      },
+      // wireframe: true,
+      // transparent: true,
+      blending: THREE.AdditiveBlending,
+      vertexShader: vertex,
+      fragmentShader: fragment,
+      depthTest: false,
+      depthWrite: false,
+    });
+
+    this.geometry = new THREE.BufferGeometry();
+
+    // this.plane = new THREE.Mesh(this.geometry, this.material);
+    // this.scene.add(this.plane);
+
+    this.populateParticles();
+
+    this.points = new THREE.Points(this.geometry, this.material);
+    this.scene.add(this.points);
+
+    this.clearPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(2700, 2700),
+      new THREE.MeshBasicMaterial({
+        transparent: true,
+        color: 0x000000,
+        opacity: 0.1,
+      })
+    );
+
+    this.scene.add(this.clearPlane);
+    this.updateParticles();
+
+    // this.scene.add(this.clearPlane);
+  }
+
+  populateParticles() {
+    this.positions = new Float32Array(this.settings.number * 3);
+    this.rands = new Float32Array(this.settings.number);
+    this.particles = [];
+
+    for (let i = 0; i < this.settings.number; i++) {
+      let x = this.iWidth * (Math.random() - 0.5);
+      let y = this.iHeight * (Math.random() - 0.5);
+      this.positions.set([x, y, 0], i * 3);
+      this.rands.set([Math.random()], i);
+      this.particles.push(
+        new Particle({
+          x,
+          y,
+          iWidth: this.iWidth,
+          iHeight: this.iHeight,
+          pres: this.pres,
+        })
+      );
+    }
+
+    this.geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(this.positions, 3)
+    );
+    this.geometry.setAttribute(
+      "rands",
+      new THREE.BufferAttribute(this.rands, 1)
+    );
+  }
+
+  stop() {
+    this.isPlaying = false;
+  }
+
+  play() {
+    if (!this.isPlaying) {
+      this.render();
+      this.isPlaying = true;
+    }
+  }
+
+  render() {
+    if (!this.isPlaying) return;
+    this.time += 0.05 * (1 - this.settings.progress);
+    this.particles.forEach((p, i) => {
+      p.update(this.image, this.time, this.settings.progress);
+      this.positions.set([p.pos.x, p.pos.y, 0], i * 3);
+    });
+    this.geometry.attributes.position.needsUpdate = true;
+
+    if (this.config) this.over.style.opacity = this.settings.progress;
+
+    this.material.uniforms.time.value = this.time;
+    requestAnimationFrame(this.render.bind(this));
+    this.renderer.render(this.scene, this.camera);
+  }
+}
