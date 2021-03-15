@@ -5,4 +5,7 @@ new Sketch({
   config: false,
   url: myimage,
   mouseover: "#mouseover",
+  settings:{
+    size: 3
+  }
 });

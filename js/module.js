@@ -17,6 +17,7 @@ export default class Sketch {
     this.scene = new THREE.Scene();
 
     this.container = options.dom;
+    this.customSettings = options.settings || {};
     this.imageFirst = options.imageFirst
     this.url = options.url;
     this.mouseoverDOM = document.querySelector(options.mouseover);
@@ -72,7 +73,7 @@ export default class Sketch {
       this.updateImage(img);
 
       this.isPlaying = true;
-      this.settings();
+      this.settingsGUI();
 
       this.addObjects();
       if (!this.config) this.mouseEvents();
@@ -145,10 +146,10 @@ export default class Sketch {
     });
   }
 
-  settings() {
+  settingsGUI() {
     let that = this;
 
-    this.settings = {
+    this.settingsDefault = {
       progress: 1,
       number: 5000,
       trails: 0.1,
@@ -169,6 +170,8 @@ export default class Sketch {
         this.material.uniforms.palette.value = palette;
       },
     };
+    this.settings = {...this.settingsDefault,...this.customSettings}
+    // console.log(this.settingsnew);
 
     if (this.config) {
       this.gui = new dat.GUI();

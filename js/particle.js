@@ -8,6 +8,7 @@ export default class particle{
         this.pres = args.pres
         this.iWidth = args.iWidth;
         this.iHeight = args.iHeight;
+        
         this.pos.x = args.x||0;
         this.pos.y = args.y||0;
         this.gravity = -0.1 - Math.random()/4
