@@ -17,6 +17,7 @@ export default class Sketch {
     this.scene = new THREE.Scene();
 
     this.container = options.dom;
+    this.imageFirst = options.imageFirst
     this.url = options.url;
     this.mouseoverDOM = document.querySelector(options.mouseover);
 
@@ -66,6 +67,8 @@ export default class Sketch {
     load.all(this.urls).then((images) => {
       let img = images[0];
 
+      document.querySelector('.over').style.backgroundImage = `url(${this.url})`
+
       this.updateImage(img);
 
       this.isPlaying = true;
@@ -107,25 +110,36 @@ export default class Sketch {
   }
 
   mouseEvents() {
+    let initialOp = 0.1;
+    let initialProg = 0;
+    let finalOp = 1;
+    let finalProg = 1;
+    // if(this.imageFirst){
+    //   initialOp = 1;
+    //   initialProg = 1;
+    //   finalOp = 0.1;
+    //   finalProg = 0;
+    //   document.querySelector('.over').style.opacity = 1;
+    // }
     this.mouseoverDOM.addEventListener("mouseover", () => {
       gsap.to(".over", {
         duration: 1,
-        opacity: 0.1,
+        opacity: initialOp,
       });
       gsap.to(this.settings, {
         duration: 1,
-        progress: 0,
+        progress: initialProg,
       });
     });
     this.mouseoverDOM.addEventListener("mouseout", () => {
       gsap.to(".over", {
         duration: 1,
-        opacity: 1,
+        opacity: finalOp,
         delay: 0.4,
       });
       gsap.to(this.settings, {
         duration: 1,
-        progress: 1,
+        progress: finalProg,
         // delay: 0.4
       });
     });
