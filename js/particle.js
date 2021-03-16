@@ -22,14 +22,14 @@ export default class particle{
 
     update(image,time, progress){
         this.nPosX = Math.floor( 
-            this.pres*(this.pos.x + 3*this.iWidth/2)/this.iWidth 
-        )  % this.pres
+            this.pres.w*(this.pos.x + 3*this.iWidth/2)/this.iWidth 
+        )  % this.pres.w
         this.nPosY = Math.floor( 
-            this.pres*(this.pos.y + 3*this.iHeight/2)/this.iHeight 
-        ) % this.pres
+            this.pres.h*(this.pos.y + 3*this.iHeight/2)/this.iHeight 
+        ) % this.pres.h
         // console.log(image,'im',this.nPosX,this.nPosY);
         // console.log(this.nPosX,this.nPosY);
-        let img = image[this.nPosX][this.pres - 1 -this.nPosY]
+        let img = image[this.nPosX][this.pres.h - 1 -this.nPosY]
         this.target = -0.1-img
         // this.vel.y += 0.6*(this.target - this.vel.y)
         // this.vel.y = lerp(this.slowGravity,this.gravity,img);

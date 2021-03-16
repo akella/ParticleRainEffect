@@ -59,17 +59,22 @@ export default class Sketch {
 
     this.urls = [this.url];
     this.pres = 200;
-    this.iWidth = 100;
-    this.iHeight = 100;
-    this.num = 5000;
-    this.camera.fov =
-      (Math.atan(this.iWidth / 300 / this.camera.aspect) * 2 * 180) / Math.PI;
+    
+    this.num = 10;
+    
 
     load.all(this.urls).then((images) => {
       let img = images[0];
 
       document.querySelector('.over').style.backgroundImage = `url(${this.url})`
-
+      this.imageWidth = img.naturalWidth
+      this.imageHeight = img.naturalHeight
+      this.iWidth = img.naturalWidth;
+      this.iHeight = img.naturalHeight;
+      this.setCameraFov()
+      
+      
+      console.log(this);
       this.updateImage(img);
 
       this.isPlaying = true;
@@ -83,22 +88,38 @@ export default class Sketch {
     });
   }
 
-  updateImage(img) {
-    this.image = Array.from(Array(this.pres), () => new Array(this.pres));
+  setCameraFov(){
+    if(this.imageWidth/this.imageHeight < this.width/this.height){
+      this.camera.fov =
+      (Math.atan(this.iWidth / 300 / this.camera.aspect) * 2 * 180) / Math.PI;
+    } else{
+      this.camera.fov =
+      (Math.atan(this.iHeight / 300 ) * 2 * 180) / Math.PI;
+      // this.camera.fov =
+      // (Math.atan(this.iHeight / 300 / this.camera.aspect) * 2 * 180) / Math.PI;
+    }
+  }
+
+  updateImage(img,size) {
+    console.log(img,img.naturalWidth);
+    
+
+    this.image = Array.from(Array(this.imageWidth), () => new Array(this.imageHeight));
     let canv = document.createElement("canvas");
     let ctx = canv.getContext("2d");
     document.body.appendChild(canv);
-    canv.width = this.pres;
-    canv.height = this.pres;
-    ctx.clearRect(0, 0, this.pres, this.pres);
-    ctx.drawImage(img, 0, 0, this.pres, this.pres);
-    var imageData = ctx.getImageData(0, 0, this.pres, this.pres);
+    canv.width = this.imageWidth;
+    canv.height = this.imageHeight;
+    ctx.clearRect(0, 0, this.imageWidth, this.imageHeight);
+    ctx.drawImage(img, 0, 0, this.imageWidth, this.imageHeight);
+    var imageData = ctx.getImageData(0, 0, this.imageWidth, this.imageHeight);
     for (let i = 0; i < imageData.data.length; i = i + 4) {
-      var x = (i / 4) % this.pres;
-      var y = Math.floor(i / 4 / this.pres);
+      var x = (i / 4) % this.imageWidth;
+      var y = Math.floor(i / 4 / this.imageWidth);
       this.image[x][y] = imageData.data[i] / 255;
       // this.image[x][y] = [imageData.data[i],imageData.data[i+1],imageData.data[i+2]] ;
     }
+    console.log(this.image)
   }
 
   updateParticles() {
@@ -222,6 +243,7 @@ export default class Sketch {
     this.camera.aspect = this.width / this.height;
 
     this.camera.updateProjectionMatrix();
+    this.setCameraFov()
   }
 
   addObjects() {
@@ -284,7 +306,7 @@ export default class Sketch {
           y,
           iWidth: this.iWidth,
           iHeight: this.iHeight,
-          pres: this.pres,
+          pres: {w: this.imageWidth,h: this.imageHeight}
         })
       );
     }
