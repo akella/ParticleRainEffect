@@ -20,7 +20,7 @@ export default class particle{
         this.phase = Math.random() * 2 * Math.PI
     }
 
-    update(image,time, progress){
+    update(image,time, progress,sideScale,speedScale){
         this.nPosX = Math.floor( 
             this.pres.w*(this.pos.x + 3*this.iWidth/2)/this.iWidth 
         )  % this.pres.w
@@ -34,8 +34,9 @@ export default class particle{
         // this.vel.y += 0.6*(this.target - this.vel.y)
         // this.vel.y = lerp(this.slowGravity,this.gravity,img);
 
-        this.vel.x = Math.sin(time + this.phase) * (.1 - img * .075)*(1-progress)
-        this.vel.y = lerp(this.slowGravity, this.gravity, img*(1-progress));
+        this.vel.x = sideScale*Math.sin(time + this.phase) * (.1 - img * .075)*(1-progress)
+        this.vel.y = speedScale*lerp(this.slowGravity, this.gravity, img*(1-progress));
+        // console.log(this.vel.y);
         this.pos = this.pos.add(this.vel, true);
         if(this.pos.y<-this.iHeight/2){
             this.pos.y = this.iHeight/2;

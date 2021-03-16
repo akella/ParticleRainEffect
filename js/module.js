@@ -127,6 +127,8 @@ export default class Sketch {
       p.gravity =
         -this.settings.gravity - Math.random() * this.settings.randomness;
       p.slowGravity = p.gravity * this.settings.gravityDifference;
+      // p.gravity*=this.settings.speedScale;
+      // p.slowGravity*=this.settings.speedScale;
     });
     this.material.uniforms.size.value = this.settings.size;
   }
@@ -175,6 +177,8 @@ export default class Sketch {
       number: 5000,
       trails: 0.1,
       size: 0.7,
+      sideScale: 1,
+      speedScale: 1,
       gravity: 0.24,
       gravityDifference: 0.08,
       randomness: 0.5,
@@ -193,6 +197,8 @@ export default class Sketch {
     };
     this.settings = {...this.settingsDefault,...this.customSettings}
     // console.log(this.settingsnew);
+
+
 
     if (this.config) {
       this.gui = new dat.GUI();
@@ -280,7 +286,7 @@ export default class Sketch {
       new THREE.MeshBasicMaterial({
         transparent: true,
         color: 0x000000,
-        opacity: 0.1,
+        opacity: this.settings.trails,
       })
     );
 
@@ -334,13 +340,14 @@ export default class Sketch {
 
   render() {
     if (!this.isPlaying) return;
-    this.time += 0.05 * (1 - this.settings.progress);
+    this.time += 0.01 * (1 - this.settings.progress);
     this.particles.forEach((p, i) => {
-      p.update(this.image, this.time, this.settings.progress);
+      p.update(this.image, this.time, this.settings.progress,this.settings.sideScale,this.settings.speedScale);
+      
       this.positions.set([p.pos.x, p.pos.y, 0], i * 3);
     });
     this.geometry.attributes.position.needsUpdate = true;
-
+    console.log(this.particles[0].vel.y);
     if (this.config) this.over.style.opacity = this.settings.progress;
 
     this.material.uniforms.time.value = this.time;
