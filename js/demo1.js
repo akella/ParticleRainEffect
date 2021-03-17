@@ -1,5 +1,5 @@
 import Sketch from "./module.js";
-import myimage from "../img/4.jpg";
+import myimage from "../img/1.jpg";
 new Sketch({
   dom: document.getElementById("container"),
   config: false,

@@ -173,15 +173,9 @@ export default class Sketch {
       size: 0.7,
       sideScale: 1,
       speedScale: 1,
-<<<<<<< Updated upstream
-      gravity: 0.24,
-      gravityDifference: 0.08,
-      randomness: 0.5,
-=======
       gravity: 0.9,
       gravityDifference: 0.02,
       randomness: 1.6,
->>>>>>> Stashed changes
       randomPalette: () => {
         let rand = Math.floor(100 * Math.random());
         let palette = colors[rand];
