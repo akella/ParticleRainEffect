@@ -146,25 +146,19 @@ export default class Sketch {
     //   document.querySelector('.over').style.opacity = 1;
     // }
     this.mouseoverDOM.addEventListener("mouseover", () => {
+      gsap.killTweensOf(".over");
       gsap.to(".over", {
-        duration: 1,
+        duration: 0.5,
+        ease: 'quad',
         opacity: initialOp,
-      });
-      gsap.to(this.settings, {
-        duration: 1,
-        progress: initialProg,
+        onStart: () => gsap.set(this.settings, {progress: initialProg})
       });
     });
     this.mouseoverDOM.addEventListener("mouseout", () => {
       gsap.to(".over", {
-        duration: 1,
+        duration: 0.5,
         opacity: finalOp,
-        delay: 0.4,
-      });
-      gsap.to(this.settings, {
-        duration: 1,
-        progress: finalProg,
-        // delay: 0.4
+        onComplete: () => gsap.set(this.settings, {progress: finalProg})
       });
     });
   }
@@ -173,15 +167,21 @@ export default class Sketch {
     let that = this;
 
     this.settingsDefault = {
-      progress: 1,
+      progress: 0.3,
       number: 5000,
-      trails: 0.1,
+      trails: 0.03,
       size: 0.7,
       sideScale: 1,
       speedScale: 1,
+<<<<<<< Updated upstream
       gravity: 0.24,
       gravityDifference: 0.08,
       randomness: 0.5,
+=======
+      gravity: 0.9,
+      gravityDifference: 0.02,
+      randomness: 1.6,
+>>>>>>> Stashed changes
       randomPalette: () => {
         let rand = Math.floor(100 * Math.random());
         let palette = colors[rand];
