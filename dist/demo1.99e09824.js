@@ -46476,7 +46476,7 @@ var Sketch = /*#__PURE__*/function () {
 
 exports.default = Sketch;
 },{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shader/fragment.glsl":"js/shader/fragment.glsl","./shader/vertexParticles.glsl":"js/shader/vertexParticles.glsl","dat.gui":"node_modules/dat.gui/build/dat.gui.module.js","gsap":"node_modules/gsap/index.js","./particle.js":"js/particle.js","load-asset":"node_modules/load-asset/index.js","nice-color-palettes":"node_modules/nice-color-palettes/100.json"}],"img/1.jpg":[function(require,module,exports) {
-module.exports = "/1.dc197a9a.jpg";
+module.exports = "1.dc197a9a.jpg";
 },{}],"js/demo1.js":[function(require,module,exports) {
 "use strict";
 
@@ -46530,7 +46530,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50624" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63713" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -46707,4 +46707,4 @@ function hmrAcceptRun(bundle, id) {
   }
 }
 },{}]},{},["../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","js/demo1.js"], null)
-//# sourceMappingURL=/demo1.99e09824.js.map
+//# sourceMappingURL=demo1.99e09824.js.map

@@ -114,14 +114,14 @@ a:focus-visible {
 	top: 0;
 	left: 0;
 	display: grid;
-	align-content: space-between;
+	align-content: start;
 	width: 100%;
 	height: 100vh;
 	max-width: none;
 	padding: 2rem;
 	pointer-events: none;
 	grid-template-columns: 100%;
-	grid-template-rows: auto auto auto auto auto;
+	grid-template-rows: auto auto 1fr auto auto;
 	grid-template-areas: 'title'
 						'demos' 
 						'github'
@@ -167,6 +167,7 @@ a:focus-visible {
 
 .frame__enter {
 	font-size: 2rem;
+	margin: 2rem 0;
 	cursor: pointer;
 	border-bottom: 2px solid;
 	padding: 0 2px;
@@ -231,10 +232,14 @@ canvas {
 
 @media screen and (min-width: 53em) {
 	.frame {
+		align-content: space-between;
 		grid-template-columns: 25% 50% 25%;
 		grid-template-rows: auto auto auto;
 		grid-template-areas: 'title title ...'
 							'... enter ...'
 							'demos hint github';
+	}
+	.frame__enter {
+		margin: 0;
 	}
 }
